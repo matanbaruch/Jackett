@@ -64,6 +64,13 @@ namespace Jackett.Common.Models.DTO
         [DataMember]
         public string proxy_password { get; set; }
 
+        [DataMember]
+        public bool telegram_enabled { get; set; }
+        [DataMember]
+        public string telegram_bot_token { get; set; }
+        [DataMember]
+        public string telegram_chat_id { get; set; }
+
         public ServerConfig()
         {
             notices = Array.Empty<string>();
@@ -99,6 +106,10 @@ namespace Jackett.Common.Models.DTO
             proxy_port = config.ProxyPort;
             proxy_username = config.ProxyUsername;
             proxy_password = config.ProxyPassword;
+
+            telegram_enabled = config.TelegramEnabled;
+            telegram_bot_token = config.TelegramBotToken;
+            telegram_chat_id = config.TelegramChatId;
         }
     }
 }

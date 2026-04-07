@@ -1095,6 +1095,42 @@ FlareSolverr is a proxy server that solves Cloudflare and other anti-bot challen
 
 **Note:** Setting up this service is optional. Most indexers do not require it.
 
+### Configuring Telegram Bot Notifications
+
+Jackett can send notifications to Telegram about updates and other events.
+
+**What is Telegram Bot:**
+Telegram bots are automated accounts that can send messages to users or groups. Jackett uses a bot to send notifications about updates, indexer status, and other important events.
+
+**Setup Instructions:**
+
+1. **Create a Telegram Bot:**
+   - Open Telegram and search for [@BotFather](https://t.me/BotFather)
+   - Send `/newbot` command
+   - Follow the instructions to create your bot
+   - Save the **Bot Token** provided (looks like: `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`)
+
+2. **Get your Chat ID:**
+   - Search for [@userinfobot](https://t.me/userinfobot) in Telegram
+   - Send any message to the bot
+   - Copy your **Chat ID** (a number like: `123456789`)
+   - Alternatively, for group notifications, add the bot to a group and use the group's Chat ID
+
+3. **Configure in Jackett:**
+   - Open Jackett settings
+   - Enable **Telegram Notifications**
+   - Enter your **Bot Token**
+   - Enter your **Chat ID**
+   - Click **Test Telegram** to verify the configuration
+   - Click **Apply & restart** to save
+
+**What notifications are sent:**
+- Update available/downloaded
+- Critical errors (future enhancement)
+- Indexer failures (future enhancement)
+
+**Note:** Setting up Telegram notifications is optional.
+
 ### Configuring OMDb
 
 This feature is used as a fallback when using the aggregate indexer to get the movie or series title if only the IMDB ID is provided in the request.

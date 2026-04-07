@@ -29,11 +29,12 @@ namespace Jackett.Server.Controllers
         private readonly ICacheService cacheService;
         private readonly IUpdateService updater;
         private readonly ILogCacheService logCache;
+        private readonly ITelegramNotificationService telegramService;
         private readonly Logger logger;
 
         public ServerConfigurationController(IConfigurationService c, IServerService s, IProcessService p,
             IIndexerManagerService i, ISecurityService ss, ICacheService cs, IUpdateService u, ILogCacheService lc,
-            Logger l, ServerConfig sc)
+            ITelegramNotificationService ts, Logger l, ServerConfig sc)
         {
             configService = c;
             serverConfig = sc;
@@ -44,6 +45,7 @@ namespace Jackett.Server.Controllers
             cacheService = cs;
             updater = u;
             logCache = lc;
+            telegramService = ts;
             logger = l;
         }
 
@@ -189,6 +191,16 @@ namespace Jackett.Server.Controllers
                 cacheService.CleanCache();
             }
 
+            if (config.telegram_enabled != serverConfig.TelegramEnabled ||
+                config.telegram_bot_token != serverConfig.TelegramBotToken ||
+                config.telegram_chat_id != serverConfig.TelegramChatId)
+            {
+                serverConfig.TelegramEnabled = config.telegram_enabled;
+                serverConfig.TelegramBotToken = config.telegram_bot_token;
+                serverConfig.TelegramChatId = config.telegram_chat_id;
+                configService.SaveConfig(serverConfig);
+            }
+
             if (port != serverConfig.Port || external != serverConfig.AllowExternal || local_bind_address != serverConfig.LocalBindAddress)
             {
                 if (ServerUtil.RestrictedPorts.Contains(port))
@@ -301,6 +313,28 @@ namespace Jackett.Server.Controllers
             {
                 ShuttingDown = true
             });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TestTelegram()
+        {
+            try
+            {
+                var success = await telegramService.TestConnectionAsync();
+                if (success)
+                {
+                    return Ok(new { success = true, message = "Telegram test message sent successfully!" });
+                }
+                else
+                {
+                    return BadRequest(new { success = false, message = "Failed to send Telegram test message. Check the logs for details." });
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error testing Telegram connection");
+                return BadRequest(new { success = false, message = $"Error: {ex.Message}" });
+            }
         }
     }
 }
