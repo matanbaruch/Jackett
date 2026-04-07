@@ -32,13 +32,14 @@ namespace Jackett.Common.Services
         private readonly ITrayLockService lockService;
         private readonly IServiceConfigService windowsService;
         private readonly IFilePermissionService filePermissionService;
+        private readonly ITelegramNotificationService telegramService;
         private readonly ServerConfig serverConfig;
         private bool forceUpdateCheck; // false by default
         private Variants.JackettVariant variant;
 
         private static readonly Regex _VersionRegex = new Regex(@"v(?<major>\d+)\.(?<minor>\d+)\.(?<build>\d+)", RegexOptions.Compiled);
 
-        public UpdateService(Logger l, WebClient c, ITrayLockService ls, IServiceConfigService ws, IFilePermissionService fps, ServerConfig sc)
+        public UpdateService(Logger l, WebClient c, ITrayLockService ls, IServiceConfigService ws, IFilePermissionService fps, ITelegramNotificationService ts, ServerConfig sc)
         {
             logger = l;
             client = c;
@@ -46,6 +47,7 @@ namespace Jackett.Common.Services
             windowsService = ws;
             serverConfig = sc;
             filePermissionService = fps;
+            telegramService = ts;
 
             variant = new Variants().GetVariant();
 
@@ -155,6 +157,23 @@ namespace Jackett.Common.Services
                     {
                         logger.Info("New release found. Current version: v{0} New version: v{1}", currentVersion, latestVersion);
                         logger.Info("Downloading release v{0} It could take a while...", latestVersion);
+
+                        // Send Telegram notification about new update
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await telegramService.SendNotificationAsync(
+                                    $"🔔 Jackett Update Available!\n\n" +
+                                    $"Current version: v{currentVersion}\n" +
+                                    $"New version: v{latestVersion}\n\n" +
+                                    $"Downloading update...");
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.Debug(ex, "Failed to send Telegram notification about update");
+                            }
+                        });
 
                         try
                         {
