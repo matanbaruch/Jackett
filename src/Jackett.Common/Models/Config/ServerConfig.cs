@@ -52,6 +52,11 @@ namespace Jackett.Common.Models.Config
         public string OmdbApiKey { get; set; }
         public string OmdbApiUrl { get; set; }
 
+        // Telegram Bot settings
+        public bool TelegramEnabled { get; set; }
+        public string TelegramBotToken { get; set; }
+        public string TelegramChatId { get; set; }
+
         /// <summary>
         /// Ignore as we don't really want to be saving settings specified in the command line.
         /// This is a bit of a hack, but in future it might not be all that bad to be able to override config values using settings that were provided at runtime. (and save them if required)

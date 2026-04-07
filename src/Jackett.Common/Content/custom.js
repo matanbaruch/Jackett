@@ -137,6 +137,11 @@ function loadJackettSettings() {
         $("#jackett-flaresolverr-maxtimeout").val(data.flaresolverr_maxtimeout);
         $("#jackett-omdbkey").val(data.omdbkey);
         $("#jackett-omdburl").val(data.omdburl);
+
+        $("#jackett-telegram-enabled").attr('checked', data.telegram_enabled);
+        $("#jackett-telegram-bot-token").val(data.telegram_bot_token);
+        $("#jackett-telegram-chat-id").val(data.telegram_chat_id);
+
         var password = data.password;
         $("#jackett-adminpwd").val(password);
         if (password != null && password != '') {
@@ -1649,6 +1654,10 @@ function bindUIButtons() {
         var jackett_proxy_username = $("#jackett-proxy-username").val();
         var jackett_proxy_password = $("#jackett-proxy-password").val();
 
+        var jackett_telegram_enabled = $("#jackett-telegram-enabled").is(':checked');
+        var jackett_telegram_bot_token = $("#jackett-telegram-bot-token").val();
+        var jackett_telegram_chat_id = $("#jackett-telegram-chat-id").val();
+
         var jsonObject = {
             port: jackett_port,
             external: jackett_external,
@@ -1672,7 +1681,10 @@ function bindUIButtons() {
             proxy_url: jackett_proxy_url,
             proxy_port: jackett_proxy_port,
             proxy_username: jackett_proxy_username,
-            proxy_password: jackett_proxy_password
+            proxy_password: jackett_proxy_password,
+            telegram_enabled: jackett_telegram_enabled,
+            telegram_bot_token: jackett_telegram_bot_token,
+            telegram_chat_id: jackett_telegram_chat_id
         };
         api.updateServerConfig(jsonObject, function (data) {
             doNotify("Redirecting you to complete configuration update..", "success", "glyphicon glyphicon-ok");
@@ -1699,6 +1711,33 @@ function bindUIButtons() {
             }
         }).fail(function () {
             doNotify("Request to Jackett server failed", "danger", "glyphicon glyphicon-alert");
+        });
+    });
+
+    $("#test-telegram").click(function () {
+        var btn = $(this);
+        btn.prop('disabled', true);
+        btn.text('Testing...');
+
+        $.ajax({
+            url: "/api/v2.0/server/testtelegram",
+            type: "POST",
+            contentType: "application/json",
+            dataType: "json",
+            headers: {
+                "X-Api-Key": api.key
+            }
+        }).done(function (data) {
+            doNotify(data.message || "Telegram test message sent successfully!", "success", "glyphicon glyphicon-ok");
+        }).fail(function (jqXHR) {
+            var errorMsg = "Failed to send Telegram test message.";
+            if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                errorMsg = jqXHR.responseJSON.message;
+            }
+            doNotify(errorMsg, "danger", "glyphicon glyphicon-alert");
+        }).always(function () {
+            btn.prop('disabled', false);
+            btn.text('Test Telegram');
         });
     });
 
